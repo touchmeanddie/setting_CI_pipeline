@@ -9,13 +9,3 @@ def create_app():
         return jsonify(status="ok"), 200
 
     return app
-
-
-def my_app():
-    app = Flask(__name__)
-
-    @app.route("/testroute")
-    def testroute():
-        return jsonify(status="ok"), 200
-
-    return app
