@@ -48,7 +48,8 @@ jobs:
       - name: Сборка образа (без публикации) с кэшированием слоёв     
         uses: docker/build-push-action@v6     
         with:     
-          context: .     
+          context: .
+          file: Dockerfile.multi      
           push: false     
           load: true     
           tags: myapp:${{ github.sha }}     
