@@ -44,8 +44,6 @@ jobs:
 
       - name: Настройка Buildx     
         uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker     
       
       - name: Сборка образа (без публикации) с кэшированием слоёв     
         uses: docker/build-push-action@v6     
