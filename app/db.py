@@ -1,7 +1,6 @@
+import os
 import pathlib
 import psycopg
-
-from app.config import Config
 
 MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent.parent / "migrations"
 MIGRATION_LOCK_KEY = 1234
@@ -9,11 +8,11 @@ MIGRATION_LOCK_KEY = 1234
 
 def get_db_conn():
     return psycopg.connect(
-        host=Config.PGHOST,
-        port=Config.PGPORT,
-        dbname=Config.PGDATABASE,
-        user=Config.PGUSER,
-        password=Config.PGPASSWORD,
+        host=os.getenv("PGHOST", "localhost"),
+        port=int(os.getenv("PGPORT", "5432")),
+        dbname=os.getenv("PGDATABASE", "appdb"),
+        user=os.getenv("PGUSER", "app"),
+        password=os.environ["PGPASSWORD"],
     )
 
 
