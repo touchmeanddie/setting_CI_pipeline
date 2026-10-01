@@ -221,3 +221,4 @@ jobs:
           else
             git commit -m "Deploy to staging"
             git push
+          fi
