@@ -12,7 +12,7 @@ def get_db_conn():
         port=int(os.getenv("PGPORT", "5432")),
         dbname=os.getenv("PGDATABASE", "appdb"),
         user=os.getenv("PGUSER", "app"),
-        password=os.environ("PGPASSWORD", "test"),
+        password=os.getenv("PGPASSWORD", "test"),
     )
 
 
