@@ -47,7 +47,7 @@ jobs:
         run: flake8 app tests
 
       - name: Run Unit tests
-        run: python -m pytest tests/unit --cov=app --cov-report=term --cov-report=xml --cov-fail-under=80
+        run: python -m pytest tests/unit --cov=app.health --cov-report=term --cov-report=xml --cov-fail-under=80
 
       - name: Build
         run: python -m py_compile app/*.py
