@@ -192,3 +192,32 @@ jobs:
           TAG="${{ needs.prepare.outputs.short_sha }}"
           skopeo inspect "docker://ghcr.io/${{ needs.prepare.outputs.repo }}-staging:${TAG}" \
             | head -c 500
+
+  update-manifest:
+    name: Update staging K8s manifest
+    needs: [prepare, promote-to-staging]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка yq 
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Обновление тега образа и коммит 
+        run: |
+          TAG="${{ needs.prepare.outputs.short_sha }}"
+          REPO="${{ needs.prepare.outputs.repo }}"
+          yq -i ".spec.template.spec.containers[0].image = \"ghcr.io/${REPO}-staging:${TAG}\"" \
+            k8s-manifests/staging/deployment.yaml
+          git config user.email "ci-bot@example.com"
+          git config user.name "CI Bot"
+          git add k8s-manifests/staging/deployment.yaml
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Deploy to staging"
+            git push
