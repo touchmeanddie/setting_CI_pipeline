@@ -167,3 +167,28 @@ jobs:
             ghcr.io/${{ needs.prepare.outputs.repo }}:${{ github.run_number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  
+  promote-to-staging:
+    name: Promote image to staging
+    needs: [prepare, build-and-push]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            skopeo login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Copy image from prod to staging repo
+        run: |
+          SRC="docker://ghcr.io/${{ needs.prepare.outputs.repo }}:${{ needs.prepare.outputs.short_sha }}"
+          DST="docker://ghcr.io/${{ needs.prepare.outputs.repo }}-staging:${{ needs.prepare.outputs.short_sha }}"
+          echo "Copying $SRC -> $DST"
+          skopeo copy "$SRC" "$DST"
+
+      - name: Verify image in staging
+        run: |
+          TAG="${{ needs.prepare.outputs.short_sha }}"
+          skopeo inspect "docker://ghcr.io/${{ needs.prepare.outputs.repo }}-staging:${TAG}" \
+            | head -c 500
