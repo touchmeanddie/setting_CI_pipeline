@@ -93,17 +93,17 @@ jobs:
 
       - name: Настройка Buildx     
         uses: docker/setup-buildx-action@v3
-      
+       
       - name: Сборка образа (без публикации) с кэшированием слоёв     
         uses: docker/build-push-action@v6     
-        with:     
+        with:
           context: .
-          file: Dockerfile.multi      
-          push: false     
-          load: true     
-          tags: myapp:${{ github.sha }}     
-          cache-from: type=gha     
-          cache-to: type=gha,mode=max    
+          file: Dockerfile.multi
+          push: false
+          load: true
+          tags: myapp:${{ needs.prepare.outputs.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max 
 
       - name: Trivy artifact
         if: always()
@@ -155,19 +155,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push image to GitHub Container Registry
+      - name: Tag and push image to GHCR
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.multi
-          push: true
-          tags: |
-            ghcr.io/${{ needs.prepare.outputs.repo }}:${{ needs.prepare.outputs.short_sha }}
-            ghcr.io/${{ needs.prepare.outputs.repo }}:${{ github.run_number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-  
+        run: |
+          SRC="myapp:${{ needs.prepare.outputs.short_sha }}"
+          REGISTRY="ghcr.io/${{ needs.prepare.outputs.repo }}"
+          TAG_SHA="${{ needs.prepare.outputs.short_sha }}"
+          TAG_RUN="${{ github.run_number }}"
+
+          echo "Source image: $SRC"
+
+          docker tag "$SRC" "$REGISTRY:$TAG_SHA"
+          docker tag "$SRC" "$REGISTRY:$TAG_RUN"
+
+          docker push "$REGISTRY:$TAG_SHA"
+          docker push "$REGISTRY:$TAG_RUN"
+
   promote-to-staging:
     name: Promote image to staging
     needs: [prepare, build-and-push]
