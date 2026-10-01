@@ -45,7 +45,7 @@ def app_client():
 def test_first_request_uses_database(app_client):
     response = app_client.get('/visits')
 
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     data = response.get_json()
     assert data['source'] == 'db'
